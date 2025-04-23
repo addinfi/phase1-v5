@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Faster</title>
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/60/60525.png" type="image/png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* General Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: #fff;
+            padding: 30px;
+            width: 90%;
+            max-width: 700px;
+            margin: 30px auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .header {
+            background: #007BFF;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            border-radius: 10px 10px 0 0;
+            margin: -30px -30px 20px;
+        }
+
+        .header img {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            margin-bottom: 15px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin: 0;
+        }
+
+        .form-container {
+            padding: 30px 25px;
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
+        .form-container h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #007BFF;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-family: sans-serif;
+        }
+
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        button.loading {
+            color: transparent;
+        }
+
+        button.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin: -10px 0 0 -10px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        .toggle-link {
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .toggle-link a {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .toggle-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Pop-up Styles */
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: white;
+            padding: 40px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            z-index: 1000;
+            display: none;
+            text-align: center;
+            max-width: 400px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .popup.show {
+            display: block;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .popup.success {
+            border: 3px solid #27ae60;
+            color: #27ae60;
+        }
+
+        .popup.error {
+            border: 3px solid #e74c3c;
+            color: #e74c3c;
+        }
+
+        .popup h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        .popup p {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .popup button {
+            background: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .popup button:hover {
+            background: #2980b9;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        .password-requirements {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #f9f9f9;
+        }
+
+        .password-requirements ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 5px 0 0;
+        }
+
+        .password-requirements li {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .password-requirements li i {
+            margin-right: 5px;
+            width: 14px;
+        }
+
+        .password-requirements li i.fa-check {
+            color: #27ae60;
+        }
+
+        .password-requirements li i.fa-times {
+            color: #e74c3c;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <img src="mainlogo.png" alt="Symbiosis College Logo">
+            <h1>Review Faster</h1>
+        </div>
+
+        <!-- Login Form -->
+        <div class="form-container active" id="loginForm">
+            <h2>Login</h2>
+            <form id="loginFormElement">
+                <input type="text" id="loginUserId" placeholder="Enter Email ID (must contain @)" required>
+                <input type="password" id="loginPassword" placeholder="Enter Password" required>
+                <button type="submit">Login</button>
+            </form>
+            <div class="toggle-link">
+                <a href="#register">Not registered? Register here</a> <br>
+                <a href="#forgot">Forgot password?</a>
+            </div>
+        </div>
+
+        <!-- Register Form -->
+        <div class="form-container" id="registerForm">
+            <h2>Business Registration</h2>
+            <form id="registerFormElement">
+                <input type="text" id="registerBusinessName" placeholder="Business Name" required>
+                <select id="registerBusinessType" required>
+                    <option value="">Select Business Type</option>
+                    <option value="Salon">Salon</option>
+                    <option value="Gym">Gym</option>
+                    <option value="Restaurant">Restaurant</option>
+                    <option value="Retail">Retail Store</option>
+                    <option value="Spa">Spa</option>
+                    <option value="Other">Other</option>
+                </select>
+                <input type="text" id="customBusinessType" placeholder="Enter your business type"
+                    style="display:none;" />
+
+                <input type="text" id="registerEmail" placeholder="Business Email" required>
+                <input type="url" id="registerReviewUrl" placeholder="Google Review Page URL" required>
+                <input type="password" id="registerPassword" placeholder="Password" required>
+                <input type="password" id="registerConfirmPassword" placeholder="Confirm Password" required>
+                <div id="passwordRequirements" class="password-requirements" style="display: none;">
+                    Password must contain:
+                    <ul>
+                        <li id="lengthReq"><i class="fas fa-times"></i> At least 8 characters</li>
+                        <li id="letterReq"><i class="fas fa-times"></i> At least one letter</li>
+                        <li id="numberReq"><i class="fas fa-times"></i> At least one number</li>
+                        <li id="specialReq"><i class="fas fa-times"></i> At least one special character (@$!%*#?&)</li>
+                        <li id="matchReq"><i class="fas fa-times"></i> Passwords match</li>
+                    </ul>
+                </div>
+                <button type="submit">Register Business</button>
+            </form>
+            <div class="toggle-link">
+                <a href="#login">Already registered? Login here</a>
+            </div>
+        </div>
+
+        <!-- Forgot Password Form -->
+        <div class="form-container" id="forgotForm">
+            <h2>Forgot Password</h2>
+            <form id="forgotPasswordFormElement">
+                <input type="text" id="forgotEmail" placeholder="Enter Email ID (must contain @)" required>
+                <button type="submit">Reset Password</button>
+            </form>
+            <div class="toggle-link">
+                <a href="#login">Back to Login</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="popup" id="popup">
+        <h3 id="popupTitle">Success!</h3>
+        <p id="popupMessage">You have successfully logged in.</p>
+        <button onclick="closePopup()">OK</button>
+    </div>
+
+    <script>
+        // Initialize on page load
+        (function () {
+            // Initialize users array in localStorage if it doesn't exist
+            if (!localStorage.getItem('users')) {
+                localStorage.setItem('users', JSON.stringify([]));
+            }
+        })();
+
+        // other business 
+        document.getElementById('registerBusinessType').addEventListener('change', function () {
+            const customField = document.getElementById('customBusinessType');
+            if (this.value === 'Other') {
+                customField.style.display = 'block';
+                customField.required = true;
+            } else {
+                customField.style.display = 'none';
+                customField.required = false;
+            }
+        });
+
+
+        // Handle hash-based navigation
+        function handleHash() {
+            const hash = window.location.hash.slice(1) || 'login';
+            showForm(hash);
+        }
+
+        // Listen for hash changes
+        window.addEventListener('hashchange', handleHash);
+
+        // Check hash on initial load
+        window.addEventListener('load', handleHash);
+
+        function showForm(form) {
+            document.querySelectorAll('.form-container').forEach(f => f.classList.remove('active'));
+            document.getElementById(`${form}Form`).classList.add('active');
+            if (window.location.hash !== `#${form}`) {
+                history.pushState(null, '', `#${form}`);
+            }
+        }
+
+        function showPopup(title, message, isSuccess = true, redirect = false) {
+            const popup = document.getElementById('popup');
+            const overlay = document.getElementById('overlay');
+
+            document.getElementById('popupTitle').textContent = title;
+            document.getElementById('popupMessage').textContent = message;
+            popup.className = `popup ${isSuccess ? 'success' : 'error'} show`;
+            overlay.classList.add('show');
+
+            if (redirect) {
+                setTimeout(() => {
+                    window.location.href = 'welcome.html';
+                }, 2000);
+            }
+        }
+
+        function closePopup() {
+            document.getElementById('popup').classList.remove('show');
+            document.getElementById('overlay').classList.remove('show');
+        }
+
+        // Handle login form submission
+        document.getElementById('loginFormElement').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const email = document.getElementById('loginUserId').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.classList.add('loading');
+
+            try {
+                // Validate email contains @
+                if (!email.includes('@')) {
+                    showPopup('Error!', 'Please include @ in your email', false);
+                    return;
+                }
+
+                // Get users from localStorage
+                const users = JSON.parse(localStorage.getItem('users')) || [];
+                const user = users.find(u => u.email === email && u.password === password);
+
+                if (user) {
+                    // Store user data for welcome page
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    showPopup('Success!', 'Login successful! Redirecting to dashboard...', true, true);
+                } else {
+                    showPopup('Error!', 'Invalid email or password. Please try again.', false);
+                }
+            } catch (error) {
+                console.error('Error during login:', error);
+                showPopup('Error!', 'Login failed. Please try again.', false);
+            } finally {
+                submitButton.disabled = false;
+                submitButton.classList.remove('loading');
+            }
+        });
+
+        // Password validation function
+        function validatePassword() {
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            const requirements = document.getElementById('passwordRequirements');
+
+            // Show requirements when password field has content
+            requirements.style.display = password.length > 0 ? 'block' : 'none';
+
+            // Check each requirement
+            const hasLength = password.length >= 8;
+            const hasLetter = /[A-Za-z]/.test(password);
+            const hasNumber = /\d/.test(password);
+            const hasSpecial = /[@$!%*#?&]/.test(password);
+            const passwordsMatch = password === confirmPassword && password !== '';
+
+            // Update requirement icons
+            document.getElementById('lengthReq').innerHTML =
+                `<i class="fas fa-${hasLength ? 'check' : 'times'}"></i> At least 8 characters`;
+            document.getElementById('letterReq').innerHTML =
+                `<i class="fas fa-${hasLetter ? 'check' : 'times'}"></i> At least one letter`;
+            document.getElementById('numberReq').innerHTML =
+                `<i class="fas fa-${hasNumber ? 'check' : 'times'}"></i> At least one number`;
+            document.getElementById('specialReq').innerHTML =
+                `<i class="fas fa-${hasSpecial ? 'check' : 'times'}"></i> At least one special character (@$!%*#?&)`;
+            document.getElementById('matchReq').innerHTML =
+                `<i class="fas fa-${passwordsMatch ? 'check' : 'times'}"></i> Passwords match`;
+
+            return hasLength && hasLetter && hasNumber && hasSpecial && passwordsMatch;
+        }
+
+        // Add event listeners for password validation
+        document.getElementById('registerPassword').addEventListener('input', validatePassword);
+        document.getElementById('registerConfirmPassword').addEventListener('input', validatePassword);
+
+        // Show requirements when password field is focused
+        document.getElementById('registerPassword').addEventListener('focus', function () {
+            const password = this.value;
+            const requirements = document.getElementById('passwordRequirements');
+            requirements.style.display = 'block';
+            validatePassword();
+        });
+
+        // Hide requirements when password field loses focus and is empty
+        document.getElementById('registerPassword').addEventListener('blur', function () {
+            if (this.value === '') {
+                document.getElementById('passwordRequirements').style.display = 'none';
+            }
+        });
+
+        // Handle registration form submission
+        document.getElementById('registerFormElement').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const businessName = document.getElementById('registerBusinessName').value;
+            let businessType = document.getElementById('registerBusinessType').value;
+            if (businessType === 'Other') {
+                businessType = document.getElementById('customBusinessType').value;
+            }
+
+            const email = document.getElementById('registerEmail').value;
+            const reviewUrl = document.getElementById('registerReviewUrl').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+            // Validate email
+            if (!email.includes('@')) {
+                showPopup('Error!', 'Please enter a valid email address', false);
+                return;
+            }
+
+            // Validate password requirements
+            if (!validatePassword()) {
+                showPopup('Error!', 'Password must meet all requirements', false);
+                return;
+            }
+
+            // Validate Google review URL
+            try {
+                new URL(reviewUrl);
+            } catch {
+                showPopup('Error!', 'Please enter a valid Google Review URL', false);
+                return;
+            }
+
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.classList.add('loading');
+
+            try {
+                // Get existing users
+                const users = JSON.parse(localStorage.getItem('users')) || [];
+
+                // Check if email already exists
+                if (users.some(user => user.email === email)) {
+                    showPopup('Error!', 'This email is already registered', false);
+                    return;
+                }
+
+                // Create new user object
+                const newUser = {
+                    businessName,
+                    businessType,
+                    email,
+                    reviewUrl,
+                    password
+                };
+
+                // Add to users array
+                users.push(newUser);
+                localStorage.setItem('users', JSON.stringify(users));
+
+                showPopup('Success!', 'Registration successful! Redirecting to login...', true);
+                setTimeout(() => {
+                    showForm('login');
+                }, 2000);
+            } catch (error) {
+                console.error('Registration error:', error);
+                showPopup('Error!', 'Registration failed. Please try again.', false);
+            } finally {
+                submitButton.disabled = false;
+                submitButton.classList.remove('loading');
+            }
+        });
+
+        // Handle forgot password form submission
+        document.getElementById('forgotPasswordFormElement').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const email = document.getElementById('forgotEmail').value;
+
+            // Validate email contains @
+            if (!email.includes('@')) {
+                showPopup('Error!', 'Email must contain @ symbol', false);
+                return;
+            }
+            showPopup('Success!', 'If this email is registered, you will receive your ID and password shortly.', true);
+            setTimeout(() => {
+                showForm('login');
+            }, 2000);
+        });
+    </script>
+
+</body>
+
+</html>

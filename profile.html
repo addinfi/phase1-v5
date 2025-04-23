@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Profile - Review Faster</title>
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/60/60525.png" type="image/png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* Navbar Styles */
+        .navbar {
+            background: #007BFF;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .navbar-logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-logo img {
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .navbar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .navbar-menu {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .navbar-toggle {
+                display: block;
+            }
+
+            .navbar-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: #007BFF;
+                flex-direction: column;
+                padding: 10px;
+                gap: 10px;
+            }
+
+            .navbar-menu.show {
+                display: flex;
+            }
+
+            .navbar-menu a {
+                width: 100%;
+                text-align: center;
+                padding: 10px;
+            }
+
+            .profile-dropdown {
+                width: 100%;
+            }
+
+            .profile-content {
+                width: 100%;
+                position: static;
+                margin-top: 10px;
+            }
+        }
+
+        .navbar-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar-menu a:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        /* Main Content Styles */
+        body {
+            background-color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            background: #fff;
+            padding: 30px;
+            width: 90%;
+            max-width: 700px;
+            margin: 80px auto 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        h1 {
+            color: #007BFF;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: #007BFF;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+        }
+
+        .url-preview {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .url-preview:hover {
+            background: #e9ecef;
+        }
+
+        .save-btn {
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .save-btn:hover {
+            background: #0056b3;
+        }
+
+        /* Modal Styles */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal h3 {
+            margin-top: 0;
+            color: #007BFF;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .modal-buttons .save-url {
+            background: #28a745;
+            color: white;
+        }
+
+        .modal-buttons .cancel {
+            background: #dc3545;
+            color: white;
+        }
+
+        /* Success Message */
+        .success-message {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-logo">
+            <span style="color: white; font-weight: bold;">Review Faster</span>
+        </div>
+        <button class="navbar-toggle" onclick="toggleMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="navbar-menu" id="navbarMenu">
+            <a href="welcome.html">Home</a>
+            <a href="customers.html">Customers Data</a>
+            <a href="profile.html">Profile</a>
+            <button onclick="logout()" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Business Profile</h1>
+        <form id="profileForm" onsubmit="return false;">
+            <div class="form-group">
+                <label for="businessName">Business Name</label>
+                <input type="text" id="businessName" required>
+            </div>
+            <div class="form-group">
+                <label for="businessType">Business Type</label>
+                <select id="businessType" required>
+                    <option value="Salon">Salon</option>
+                    <option value="Gym">Gym</option>
+                    <option value="Restaurant">Restaurant</option>
+                    <option value="Retail">Retail Store</option>
+                    <option value="Spa">Spa</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="businessEmail">Business Email</label>
+                <input type="email" id="businessEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="reviewUrl">Google Review URL</label>
+                <div class="url-preview" onclick="showUrlModal()">
+                    <i class="fas fa-link"></i>
+                    <span id="currentUrl">Click to view/edit URL</span>
+                </div>
+            </div>
+            <button class="save-btn" onclick="saveProfile()">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+        </form>
+    </div>
+
+    <!-- URL Modal -->
+    <div id="urlModal" class="modal-backdrop">
+        <div class="modal">
+            <h3>Google Review URL</h3>
+            <p>Current URL:</p>
+            <input type="url" id="reviewUrlInput" placeholder="Enter Google Review URL">
+            <div class="modal-buttons">
+                <button class="save-url" onclick="saveUrl()">Save</button>
+                <button class="cancel" onclick="closeUrlModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="success-message">
+        Changes saved successfully!
+    </div>
+
+    <script>
+        // Load business details
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('businessName').value = currentUser.businessName || '';
+            document.getElementById('businessType').value = currentUser.businessType || 'Other';
+            document.getElementById('businessEmail').value = currentUser.email || '';
+            document.getElementById('currentUrl').textContent = currentUser.reviewUrl ? 'link' : 'Click to add URL';
+            document.getElementById('reviewUrlInput').value = currentUser.reviewUrl || '';
+        });
+
+        function toggleMenu() {
+            document.getElementById('navbarMenu').classList.toggle('show');
+        }
+2
+        function showUrlModal() {
+            document.getElementById('urlModal').style.display = 'flex';
+        }
+
+        function closeUrlModal() {
+            document.getElementById('urlModal').style.display = 'none';
+        }
+
+        function saveUrl() {
+            const url = document.getElementById('reviewUrlInput').value;
+            try {
+                new URL(url); // Validate URL
+                document.getElementById('currentUrl').textContent = 'link';
+                closeUrlModal();
+            } catch {
+                alert('Please enter a valid URL');
+            }
+        }
+
+        function saveProfile() {
+            const businessName = document.getElementById('businessName').value;
+            const businessType = document.getElementById('businessType').value;
+            const email = document.getElementById('businessEmail').value;
+            const reviewUrl = document.getElementById('reviewUrlInput').value;
+
+            if (!businessName || !businessType || !email) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            try {
+                new URL(reviewUrl);
+            } catch {
+                alert('Please enter a valid Google Review URL');
+                return;
+            }
+
+            const updatedUser = {
+                businessName,
+                businessType,
+                email,
+                reviewUrl
+            };
+
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+
+            // Show success message
+            const successMessage = document.getElementById('successMessage');
+            successMessage.style.display = 'block';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const urlModal = document.getElementById('urlModal');
+            if (event.target === urlModal) {
+                closeUrlModal();
+            }
+            if (!event.target.matches('.navbar-toggle') && !event.target.matches('.navbar-toggle *')) {
+                const menu = document.getElementById('navbarMenu');
+                if (menu.classList.contains('show')) {
+                    menu.classList.remove('show');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

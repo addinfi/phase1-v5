@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Data - Review Faster</title>
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/60/60525.png" type="image/png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* Navbar Styles */
+        .navbar {
+            background: #007BFF;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .navbar-logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-logo img {
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .navbar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .navbar-menu {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .navbar-toggle {
+                display: block;
+            }
+
+            .navbar-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: #007BFF;
+                flex-direction: column;
+                padding: 10px;
+                gap: 10px;
+            }
+
+            .navbar-menu.show {
+                display: flex;
+            }
+
+            .navbar-menu a {
+                width: 100%;
+                text-align: center;
+                padding: 10px;
+            }
+
+            .profile-dropdown {
+                width: 100%;
+            }
+
+            .profile-content {
+                width: 100%;
+                position: static;
+                margin-top: 10px;
+            }
+        }
+
+        .navbar-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar-menu a:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .profile-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .profile-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 5px 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .profile-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            padding: 10px;
+            z-index: 1;
+        }
+
+        .profile-content.show {
+            display: block;
+        }
+
+        .profile-content .business-details {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .profile-content .business-details p {
+            margin: 5px 0;
+            color: #333;
+        }
+
+        .logout-btn {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Main Content Styles */
+        body {
+            background-color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            background: #fff;
+            padding: 30px;
+            width: 90%;
+            max-width: 1200px;
+            margin: 80px auto 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        h1 {
+            color: #007BFF;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Table Styles */
+        .customers-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .customers-table th,
+        .customers-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .customers-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .customers-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .customers-table td {
+            color: #666;
+        }
+
+        /* Responsive Table */
+        @media screen and (max-width: 768px) {
+            .customers-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        /* Button Styles */
+        .btn, .action-btn {
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        .btn:hover, .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn {
+            gap: 8px;
+            font-weight: 500;
+            padding: 10px 20px;
+        }
+
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            margin: 0 4px;
+        }
+
+        .btn i, .action-btn i {
+            font-size: 16px;
+        }
+
+        /* Button Colors */
+        .btn-success, .whatsapp-btn {
+            background: linear-gradient(145deg, #28a745, #218838);
+        }
+
+        .btn-success:hover, .whatsapp-btn:hover {
+            background: linear-gradient(145deg, #218838, #28a745);
+        }
+
+        .edit-btn {
+            background: linear-gradient(145deg, #0d6efd, #0257D5);
+        }
+
+        .edit-btn:hover {
+            background: linear-gradient(145deg, #0257D5, #0d6efd);
+        }
+
+        .delete-btn {
+            background: linear-gradient(145deg, #dc3545, #B02A37);
+        }
+
+        .delete-btn:hover {
+            background: linear-gradient(145deg, #B02A37, #dc3545);
+        }
+
+        /* Tooltip Styles */
+        .action-btn {
+            position: relative;
+            width: 36px;
+            height: 36px;
+            margin: 0 4px;
+        }
+
+        .action-btn::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 5px 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            font-size: 12px;
+            border-radius: 4px;
+            white-space: nowrap;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover::before {
+            visibility: visible;
+            opacity: 1;
+            bottom: 120%;
+        }
+
+        /* Popup Message */
+        .popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            z-index: 9999;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Edit Modal Styles */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .modal label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .modal button {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .modal button:hover {
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .modal {
+                width: 95%;
+                margin: 10px;
+                padding: 15px;
+            }
+
+            .popup {
+                left: 20px;
+                right: 20px;
+                text-align: center;
+            }
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .empty-state p {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-logo">
+            <span style="color: white; font-weight: bold;">Review Faster</span>
+        </div>
+        <button class="navbar-toggle" onclick="toggleMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="navbar-menu" id="navbarMenu">
+            <a href="welcome.html">Home</a>
+            <a href="customers.html">Customers Data</a>
+            <a href="profile.html">Profile</a>
+            <button onclick="logout()" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Customer Data</h1>
+        <div style="text-align: right; margin-bottom: 20px;">
+            <button onclick="loadCustomerData()" class="btn btn-success">
+                <i class="fas fa-sync-alt"></i>
+                <span>Refresh Data</span>
+            </button>
+        </div>
+        <table class="customers-table">
+            <thead>
+                <tr>
+                    <th>Customer Name</th>
+                    <th>WhatsApp Number</th>
+                    <th>Service Taken</th>
+                    <th>Bill Amount</th>
+                    <th>Date Added</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="customersTableBody">
+                <!-- Table content will be populated by JavaScript -->
+            </tbody>
+        </table>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <i class="fas fa-database"></i>
+            <p>No customer data available</p>
+            <p>Add customers from the home page</p>
+        </div>
+    </div>
+
+        <script>
+            function toggleMenu() {
+                document.getElementById('navbarMenu').classList.toggle('show');
+            }
+            // Check login and load data
+            document.addEventListener('DOMContentLoaded', function() {
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                if (!currentUser) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                // Load customer data
+                loadCustomerData();
+
+                // Refresh data when coming back to this page
+                document.addEventListener('visibilitychange', function() {
+                    if (document.visibilityState === 'visible') {
+                        loadCustomerData();
+                    }
+                });
+            });
+
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+
+        function loadCustomerData() {
+            const customers = JSON.parse(localStorage.getItem('customers')) || [];
+            const tableBody = document.getElementById('customersTableBody');
+            const emptyState = document.getElementById('emptyState');
+
+            if (customers.length === 0) {
+                tableBody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            // Sort customers by date added (newest first)
+            customers.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
+
+            emptyState.style.display = 'none';
+
+            tableBody.innerHTML = customers.map((customer, index) => `
+                <tr>
+                    <td>${customer.name}</td>
+                    <td>${customer.whatsapp}</td>
+                    <td>${customer.service || '-'}</td>
+                    <td>${customer.billAmount ? '₹' + customer.billAmount : '-'}</td>
+                    <td>${new Date(customer.dateAdded).toLocaleDateString()}</td>
+                    <td style="white-space: nowrap; text-align: center;">
+                        <button onclick="openWhatsApp('${customer.whatsapp}')" class="action-btn whatsapp-btn" data-tooltip="Open WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </button>
+                        <button onclick="editCustomer(${index})" class="action-btn edit-btn" data-tooltip="Edit Customer">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteCustomer(${index})" class="action-btn delete-btn" data-tooltip="Delete Customer">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+            function openWhatsApp(number) {
+                const url = `https://api.whatsapp.com/send?phone=${number}`;
+                window.open(url, '_blank');
+            }
+
+            function editCustomer(index) {
+                const customers = JSON.parse(localStorage.getItem('customers')) || [];
+                const customer = customers[index];
+                
+                // Create edit form HTML
+                const editHtml = `
+                    <div class="modal">
+                        <h3 style="margin-bottom: 20px;">Edit Customer</h3>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px;">Name:</label>
+                            <input type="text" id="editName" value="${customer.name}" style="width: 100%; padding: 8px;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px;">WhatsApp:</label>
+                            <input type="tel" id="editWhatsapp" value="${customer.whatsapp}" style="width: 100%; padding: 8px;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px;">Service:</label>
+                            <input type="text" id="editService" value="${customer.service || ''}" style="width: 100%; padding: 8px;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px;">Bill Amount:</label>
+                            <input type="number" id="editBillAmount" value="${customer.billAmount || ''}" style="width: 100%; padding: 8px;">
+                        </div>
+                        <div style="text-align: right; margin-top: 20px;">
+                            <button onclick="closeEditModal()" style="background: #6c757d; margin-right: 10px;">Cancel</button>
+                            <button onclick="saveEdit(${index})" style="background: #28a745;">Save Changes</button>
+                        </div>
+                    </div>
+                `;
+
+                // Show edit modal
+                const modalBackdrop = document.createElement('div');
+                modalBackdrop.className = 'modal-backdrop';
+                modalBackdrop.id = 'editModal';
+                modalBackdrop.style.display = 'flex';
+                modalBackdrop.innerHTML = editHtml;
+                document.body.appendChild(modalBackdrop);
+            }
+
+            function closeEditModal() {
+                const modal = document.getElementById('editModal');
+                if (modal) {
+                    modal.remove();
+                }
+            }
+
+            function saveEdit(index) {
+                const customers = JSON.parse(localStorage.getItem('customers')) || [];
+                const customer = customers[index];
+                const newWhatsapp = document.getElementById('editWhatsapp').value;
+
+                // Check if WhatsApp number exists (excluding current customer)
+                const existingCustomer = customers.find((c, i) => i !== index && c.whatsapp === newWhatsapp);
+                if (existingCustomer) {
+                    // Show warning message
+                    const popup = document.createElement('div');
+                    popup.className = 'popup';
+                    popup.style.backgroundColor = '#dc3545';
+                    popup.innerHTML = '<i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i> This WhatsApp number already exists in the database!';
+                    document.body.appendChild(popup);
+                    setTimeout(() => {
+                        popup.style.opacity = '0';
+                        setTimeout(() => popup.remove(), 300);
+                    }, 3000);
+                    return;
+                }
+
+                // Update customer data
+                customer.name = document.getElementById('editName').value;
+                customer.whatsapp = newWhatsapp;
+                customer.service = document.getElementById('editService').value;
+                customer.billAmount = document.getElementById('editBillAmount').value;
+
+                // Save back to localStorage
+                localStorage.setItem('customers', JSON.stringify(customers));
+
+                // Close modal and refresh table
+                closeEditModal();
+                loadCustomerData();
+
+                // Show success message
+                const popup = document.createElement('div');
+                popup.className = 'popup';
+                popup.style.backgroundColor = '#28a745';
+                popup.innerHTML = '<i class="fas fa-check-circle" style="margin-right: 8px;"></i> Customer updated successfully!';
+                document.body.appendChild(popup);
+                setTimeout(() => {
+                    popup.style.opacity = '0';
+                    setTimeout(() => popup.remove(), 300);
+                }, 3000);
+            }
+
+            function deleteCustomer(index) {
+                // Create delete confirmation modal
+                const deleteHtml = `
+                    <div class="modal" style="text-align: center;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #dc3545; margin-bottom: 20px;"></i>
+                        <h3 style="margin-bottom: 15px; color: #333;">Delete Customer</h3>
+                        <p style="margin-bottom: 25px; color: #666;">Are you sure you want to delete this customer? This action cannot be undone.</p>
+                        <div style="display: flex; justify-content: center; gap: 15px;">
+                            <button onclick="closeDeleteModal()" style="background: #6c757d; padding: 8px 20px; border-radius: 6px; color: white; border: none; cursor: pointer; transition: all 0.3s ease;">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                            <button onclick="confirmDelete(${index})" style="background: linear-gradient(145deg, #dc3545, #B02A37); padding: 8px 20px; border-radius: 6px; color: white; border: none; cursor: pointer; transition: all 0.3s ease;">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Show delete modal
+                const modalBackdrop = document.createElement('div');
+                modalBackdrop.className = 'modal-backdrop';
+                modalBackdrop.id = 'deleteModal';
+                modalBackdrop.style.display = 'flex';
+                modalBackdrop.innerHTML = deleteHtml;
+                document.body.appendChild(modalBackdrop);
+            }
+
+            function closeDeleteModal() {
+                const modal = document.getElementById('deleteModal');
+                if (modal) {
+                    modal.remove();
+                }
+            }
+
+            function confirmDelete(index) {
+                const customers = JSON.parse(localStorage.getItem('customers')) || [];
+                customers.splice(index, 1);
+                localStorage.setItem('customers', JSON.stringify(customers));
+                
+                // Close modal
+                closeDeleteModal();
+                
+                // Refresh table
+                loadCustomerData();
+
+                // Show success message
+                const popup = document.createElement('div');
+                popup.className = 'popup';
+                popup.innerHTML = '<i class="fas fa-check-circle" style="margin-right: 8px;"></i> Customer deleted successfully!';
+                document.body.appendChild(popup);
+                setTimeout(() => {
+                    popup.style.opacity = '0';
+                    setTimeout(() => popup.remove(), 300);
+                }, 3000);
+            }
+        </script>
+</body>
+</html>
